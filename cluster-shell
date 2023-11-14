@@ -1,0 +1,60 @@
+#!/usr/bin/bash
+
+name="csenter-$(env LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)"
+
+overrides="$(
+cat <<EOT
+{
+  "spec": {
+      "automountServiceAccountToken": false,
+      "containers": [
+          {
+              "command": [
+                  "bash"
+              ],
+              "image": "mwennrich/cluster-shell:latest",
+              "name": "$name",
+              "tty": true,
+              "stdin": true,
+              "stdinOnce": true,
+              "volumeMounts": [
+                  {
+                      "mountPath": "/.kubeconfig",
+                      "name": "kubeconfig"
+                  }
+              ]
+          }
+      ],
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 1,
+      "tolerations": [
+          {
+              "effect": "NoExecute",
+              "key": "node.kubernetes.io/not-ready",
+              "operator": "Exists",
+              "tolerationSeconds": 300
+          },
+          {
+              "effect": "NoExecute",
+              "key": "node.kubernetes.io/unreachable",
+              "operator": "Exists",
+              "tolerationSeconds": 300
+          }
+      ],
+      "volumes": [
+          {
+              "name": "kubeconfig",
+              "secret": {
+                  "secretName": "gardener"
+              }
+          }
+      ]
+  }
+}
+EOT
+)"
+
+# echo $overrides|jq .
+kubectl run --image  mwennrich/cluster-shell:test --restart=Never --overrides="$overrides" -it --tty "$name" -- bash
+kubectl delete pod "$name"
+# { "spec": { "automountServiceAccountToken": false, "containers": [ { "command": [ "bash" ], "env": [ { "name": "KUBECONFIG", "value": "/.kubeconfig/kubeconfig" } ], "image": "mwennrich/cluster-shell:test", "name": csenter-34v31y, "tty": true, "stdin": true, "stdinOnce": true, "volumeMounts": [ { "mountPath": "/.kubeconfig", "name": "kubeconfig" } ] } ], "serviceAccountName": "default", "terminationGracePeriodSeconds": 1, "tolerations": [ { "effect": "NoExecute", "key": "node.kubernetes.io/not-ready", "operator": "Exists", "tolerationSeconds": 300 }, { "effect": "NoExecute", "key": "node.kubernetes.io/unreachable", "operator": "Exists", "tolerationSeconds": 300 } ], "volumes": [ { "name": "kubeconfig", "secret": { "secretName": "gardener" } } ] } }
