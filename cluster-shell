@@ -54,7 +54,7 @@ cat <<EOT
               "command": [
                   "bash"
               ],
-              "image": "mwennrich/cluster-shell:latest",
+              "image": "ghcr.io/mwennrich/cluster-shell:latest",
               "name": "$pod",
               "tty": true,
               "stdin": true,
@@ -98,4 +98,4 @@ EOT
 
 trap "EC=\$?; $kubectl delete pod --wait=false $pod >&2 || true; exit \$EC" EXIT INT TERM
 
-$kubectl run --image  mwennrich/cluster-shell:test --restart=Never --overrides="$overrides" -it "$pod" -- bash
+$kubectl run --image  ghcr.io/mwennrich/cluster-shell:latest --restart=Never --overrides="$overrides" -it "$pod" -- bash
