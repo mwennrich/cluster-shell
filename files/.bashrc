@@ -85,5 +85,5 @@ complete -F _kube_contexts kubectx kx
 
 PS1="\[\e[01;33m\][\$(k8s_info)] \[\e[01;34m\]\w\[\e[00m\]\[\e[0m\]$ "
 
-cp /.kubeconfig/kubeconfig /root/.kubeconfig
+sed 's#server:.*#server: https://kube-apiserver#' < /.kubeconfig/kubeconfig > /root/.kubeconfig
 export KUBECONFIG=/root/.kubeconfig
